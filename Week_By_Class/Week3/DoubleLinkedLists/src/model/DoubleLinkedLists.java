@@ -66,124 +66,127 @@ public class DoubleLinkedLists {
         return msg;
     }
 
-    public String exchange(Node node1, Node node2) {
-        return exchange(node1, node2, this.head);
+
+    public String print(Node current){
+        String str = "";
+        // Caso base, la lista esta completamente vacia
+        if(head == null){
+           str = "The list is empty";
+        }
+        // segundo caso base, la lista no esta vacia, see llega al final de la lista
+        else if(current.getNext() == null){
+            str += "" + current.getData();
+        }
+        // caso recursivo, se salta al siguiente elemento de la lista
+
+        /*
+        * Primer llamado recursivo current = 2
+        *
+        * head
+        * |
+        * 2 -> 1 -> 0 -> null
+        * |         |
+        * current   tail
+        * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+        *
+        * Segundo llamado recursivo: current = 1
+        * head
+        * |
+        * 2 -> 1 -> 0 -> null
+        *      |    |
+        * current   tail
+        *
+        * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+        * Tercer llamado recursivo: current = 0
+        * Se llega al segundo caso base
+        * head      current
+        * |         |
+        * 2 -> 1 -> 0 -> null
+        *           |
+        *           tail
+        * */
+        else {
+            str += current.getData() + " "+ print(current.getNext());
+        }
+        return str;
     }
 
     // Method to exchange two nodes of the list
-    private String exchange(Node node1, Node node2, Node current) {
-        String msg = "";
-        if (head == null) {
-            msg = "empty list";
-        } else if (current == null) {
-            msg = "Does not exist";
-        } else if (current == node1) {
-            Node temp = node1.getNext();
-            node1.setNext(node2.getNext());
-            node2.setNext(temp);
-            msg = "exchanged";
-        } else {
-            exchange(node1, node2, current.getNext());
-        }
-        return msg;
-    }
-
-    /*
-    static pair find(int x, int y) {
-        Node N1 = null;
-        Node N2 = null;
-        Node temp = head;
-
-        // Traversing the list
-        while (temp != null) {
-            if (temp.data == x)
-                N1 = temp;
-            else if (temp.data == y)
-                N2 = temp;
-            temp = temp.next;
-        }
-        return new pair(N1, N2);
-    }
-
-    // Function to swap the nodes
-    // consisting of x and y
-    static void swap(int x, int y) {
-        // Edge Cases
-        if (head == null || head.next == null || x == y)
+    public void swap(int x, int y)
+    {
+        // Nothing to do if x and y are same
+        if (x == y)
             return;
-        // Finding the Nodes
-        pair p = find(x, y);
-        Node Node1 = p.first;
-        Node Node2 = p.second;
-        if (Node1 == head)
-            head = Node2;
-        else if (Node2 == head)
-            head = Node1;
-        if (Node1 == tail)
-            tail = Node2;
-        else if (Node2 == tail)
-            tail = Node1;
-        // Swapping Node1 and Node2
-        Node temp;
-        temp = Node1.next;
-        Node1.next = Node2.next;
-        Node2.next = temp;
-        if (Node1.next != null)
-            Node1.next.prev = Node1;
-        if (Node2.next != null)
-            Node2.next.prev = Node2;
-        temp = Node1.prev;
-        Node1.prev = Node2.prev;
-        Node2.prev = temp;
-
-        if (Node1.prev != null)
-            Node1.prev.next = Node1;
-        if (Node2.prev != null)
-            Node2.prev.next = Node2;
+ 
+        // Search for x (keep track of prevX and CurrX)
+        Node prevX = null, currX = head;
+        while (currX != null && currX.getData() != x) {
+            prevX = currX;
+            currX = currX.getNext();
+        }
+ 
+        // Search for y (keep track of prevY and currY)
+        Node prevY = null, currY = head;
+        while (currY != null && currY.getData() != y) {
+            prevY = currY;
+            currY = currY.getNext();
+        }
+ 
+        // If either x or y is not present, nothing to do
+        if (currX == null || currY == null)
+            return;
+ 
+        // If x is not head of linked list
+        if (prevX != null)
+            prevX.setNext(currY);
+        else // make y the new head
+            head = currY;
+ 
+        // If y is not head of linked list
+        if (prevY != null)
+            prevY.setNext(currX);
+        else // make x the new head
+            head = currX;
+ 
+        // Swap next pointers
+        Node temp = currX.getNext();
+        currX.setNext(currY.getNext());
+        currY.setNext(temp);
     }
 
-    ************OR************
+    public Node searchNode(int id, Node current) {
 
-    public void exchangeNodes(Node node1, Node node2) {
-        if (node1 == node2) {
-            return; // Nodes are the same, no need to exchange
-        }
-        
-        // Update previous and next references of node1 and node2
-        if (node1.prev != null) {
-            node1.prev.next = node2;
-        } else {
-            head = node2;
-        }
-        if (node2.prev != null) {
-            node2.prev.next = node1;
-        } else {
-            head = node1;
-        }
-        
-        Node tempPrev = node1.prev;
-        Node tempNext = node1.next;
-        
-        node1.prev = node2.prev;
-        node1.next = node2.next;
-        node2.prev = tempPrev;
-        node2.next = tempNext;
+        if (current == null) {
 
-        // Update neighboring nodes' references
-        if (node1.prev != null) {
-            node1.prev.next = node1;
+            return null;
+
+        } else if (current.getData() == id) {
+
+            return current;
+
+        } else {
+
+            return searchNode(id, current.getNext());
+
         }
-        if (node1.next != null) {
-            node1.next.prev = node1;
-        }
-        if (node2.prev != null) {
-            node2.prev.next = node2;
-        }
-        if (node2.next != null) {
-            node2.next.prev = node2;
-        }
+
     }
 
-*/
+    public Node getHead() {
+        return head;
+    }
+
+    public Node getTail() {
+        return tail;
+    }
+
+    public void setHead(Node head){
+        this.head = head;
+    }
+
+    public void setTail(Node tail){
+        this.tail = tail;
+    }
+
 
 }
