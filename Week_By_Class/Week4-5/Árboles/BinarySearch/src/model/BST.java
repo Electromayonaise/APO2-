@@ -159,7 +159,6 @@ public class BST {
         }
     }
 
-    // Method for balanced tree
     public void addInGroup(Integer[] keys){
         int start = 0;
         int end = keys.length - 1;

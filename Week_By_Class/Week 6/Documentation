@@ -1,0 +1,70 @@
+Una excepción (exception) es la indicación de un problema que ocurre durante la ejecución de un programa. El manejo de excepciones le permite crear aplicaciones que puedan resolver (o manejar) las excepciones. En muchos casos, el manejo de una excepción permite que el programa continúe su ejecución como si no se hubiera encontrado el problema. Las características que presentamos en este capítulo permiten a los programadores escribir programas tolerantes a fallas y robustos, que traten con los problemas que puedan surgir sin dejar de ejecutarse o que terminen sin causar estragos. El manejo de excepciones en Java se basa, en parte, en el trabajo de Andrew Koenig y Bjarne Stroustrup.
+
+Primero demostraremos las técnicas básicas de manejo de excepciones mediante un ejemplo que señala cómo manejar una excepción que ocurre cuando un método intenta realizar una división entre cero. Después del ejemplo, presentaremos varias clases de la parte superior de la jerarquía de clases de Java para el manejo de excepciones. Como verá posteriormente, sólo las clases que extienden a Throwable (paquete java.lang) en forma directa o indirecta pueden usarse para manejar excepciones. Después le mostraremos cómo usar excepciones encadenadas. Cuando invocamos a un método que indica una excepción, podemos lanzar otra excepción y encadenar la original a la nueva; esto nos permite agregar información específica de la aplicación a la excepción original. Luego le presentaremos las precondiciones y poscondiciones, que deben ser verdaderas cuando se hacen llamadas a sus métodos y cuando éstos regresan. A continuación presentaremos las aserciones, que los programadores uti- lizan en tiempo de desarrollo para facilitar el proceso de depurar su código. Por último, introduciremos dos nuevas características de manejo de excepciones en Java SE 7: atrapar varias excepciones con un solo manejador catch y la nueva instrucción try con recursos (try-with-reso urces), que libera de manera automática un recurso después de usarlo en el bloque try.
+
+#Excepciones Propias#
+
+Las excepciones son objetos que se crean en tiempo de ejecución cuando ocurre un error que interrumpe el flujo normal de ejecución de un programa. Cuando ocurre un error, el programa crea un objeto de una clase que extiende a Throwable (paquete java.lang) y lo lanza. El objeto Throwable contiene información sobre el error, incluyendo su tipo y su ubicación en el programa. El objeto Throwable se propaga a través de la pila de llamadas hasta que se captura (catch) y se maneja (handle) o hasta que el programa termina. Si el programa no captura el objeto Throwable, el programa termina y se muestra un mensaje de error en la consola. Si el programa captura el objeto Throwable, el programa puede manejar el error y continuar su ejecución. Si el programa no puede manejar el error, puede lanzar el objeto Throwable a otro método para que lo maneje. Si el programa no lanza el objeto Throwable, el programa termina y se muestra un mensaje de error en la consola. Las propias son entonces, excepciones que se crean por el programador para manejar errores que se puedan presentar en el programa. 
+
+Ex1:
+
+División entre cero sin manejo de excepciones:
+
+public class DivideByZeroNoExceptionHandling {
+    public static int cociente(int numerador, int denominador) {
+        return numerador / denominador; // posible división entre cero
+    }
+    public static void main(String[] args) {
+        Scanner explorador = new Scanner(System.in);
+        System.out.print("Escriba un numerador entero: ");
+        int numerador = explorador.nextInt();
+        System.out.print("Escriba un denominador entero: ");
+        int denominador = explorador.nextInt();
+        int resultado = cociente(numerador, denominador);
+        System.out.printf("%nResultado: %d / %d = %d%n", numerador, denominador, resultado);
+    }
+} 
+
+En este caso, si el usuario ingresa un cero como denominador, el programa termina abruptamente y se muestra un mensaje de error en la consola.
+
+Ex2:
+
+División entre cero con manejo de excepciones:
+
+public class DivideByZeroWithExceptionHandling {
+    public static int cociente(int numerador, int denominador) throws ArithmeticException {
+        return numerador / denominador; // posible división entre cero
+    }
+    public static void main(String[] args) {
+        Scanner explorador = new Scanner(System.in);
+        boolean continuarCiclo = true; // determina si se necesitan más datos de entrada
+        do {
+            try // lee dos números y calcula el cociente
+            {
+                System.out.print("Escriba un numerador entero: ");
+                int numerador = explorador.nextInt();
+                System.out.print("Escriba un denominador entero: ");
+                int denominador = explorador.nextInt();
+                int resultado = cociente(numerador, denominador);
+                System.out.printf("%nResultado: %d / %d = %d%n", numerador, denominador, resultado);
+                continuarCiclo = false; // entrada exitosa; termina el ciclo
+            } catch (InputMismatchException inputMismatchException) {
+                System.err.printf("%nExcepción: %s%n", inputMismatchException);
+                explorador.nextLine(); // descarta la entrada para que el usuario intente de nuevo
+                System.out.printf("Debe escribir enteros. Intente de nuevo.%n%n");
+            } catch (ArithmeticException arithmeticException) {
+                System.err.printf("%nExcepción: %s%n", arithmeticException);
+                System.out.printf("Cero es un denominador inválido. Intente de nuevo.%n%n");
+            }
+        } while (continuarCiclo);
+    }
+}
+
+En este caso, si el usuario ingresa un cero como denominador, el programa no termina abruptamente y se muestra un mensaje de error en la consola, sino que se maneja la excepción y se le pide al usuario que ingrese un nuevo denominador.
+
+#Jerarquía de clases de excepciones#
+
+La jerarquía de clases de excepciones de Java se muestra en la Figura 11.1. La clase Throwable es la clase raíz de la jerarquía de clases de excepciones. Las clases Exception y Error extienden a Throwable. La clase Exception representa excepciones que pueden ocurrir durante la ejecución de un programa. La clase Error representa excepciones que son causadas por problemas que surgen fuera del alcance de un programa. Las clases Exception y Error extienden a Throwable directamente. La clase RuntimeException extiende a Exception. Las clases que extienden a RuntimeException representan excepciones que pueden ocurrir durante la ejecución de un programa, pero que probablemente se puedan evitar con una programación cuidadosa. Las clases que extienden a Exception, pero no a RuntimeException, representan excepciones que pueden ocurrir durante la ejecución de un programa, pero que probablemente no se puedan evitar con una programación cuidadosa. Las clases que extienden a Error representan excepciones que son causadas por problemas que surgen fuera del alcance de un programa y que, por lo general, no se pueden evitar con una programación cuidadosa. Las clases que extienden a Error, pero no a RuntimeException, representan excepciones que son causadas por problemas que surgen fuera del alcance de un programa y que, por lo general, no se pueden evitar con una programación cuidadosa. Las clases que extienden a Exception, pero no a RuntimeException, representan excepciones que pueden ocurrir durante la ejecución de un programa, pero que probablemente no se puedan evitar con una programación cuidadosa. Las clases que extienden a Error representan excepciones que son causadas por problemas que surgen fuera del alcance de un programa y que, por lo general, no se pueden evitar con una programación cuidadosa. Las clases que extienden a Error, pero no a RuntimeException, representan excepciones que son causadas por problemas que surgen fuera del alcance de un programa y que, por lo general, no se pueden evitar con una programación cuidadosa.
+
+
+![Alt text](jerarquia.png)
